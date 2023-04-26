@@ -21,8 +21,8 @@ options = [{'label': 'All Customers', 'value': 'all'}] + \
           [{'label': customer, 'value': customer} for customer in customers]
 pivot_table = pd.pivot_table(df, index=['CUSTOMER'], values=['WELL NAME', 'Runtime','R/NR/Waiting'], aggfunc={'Runtime': 'mean','R/NR/Waiting': lambda x: sum(x == 'NR'),'WELL NAME': 'nunique'}).reset_index()
 pivot_table = pivot_table.reindex(columns=['CUSTOMER','WELL NAME', 'R/NR/Waiting', 'Runtime'])
-pivot_table = pivot_table.rename(columns={'CUSTOMER': 'Customer'})
-pivot_table = pivot_table.rename(columns={'WELL NAME': 'Installs'})
+
+
 pivot_table['Runtime'] = pivot_table['Runtime'].round()
 pivot_table = pivot_table.rename(columns={'Runtime': 'Average Runtime'})
 pivot_table = pivot_table.rename(columns={'R/NR/Waiting': 'Failures'})
