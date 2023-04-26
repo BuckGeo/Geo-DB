@@ -3,33 +3,32 @@ import numpy as np
 from scipy.stats import norm
 import plotly.express as px
 import dash
-from dash import dash_table
+
 from dash import dcc
 from dash import html
 import math
 from dash import dash_table
-from datetime import datetime
-import plotly.graph_objs as go
+
 
 
 df = pd.read_excel('New Geo Tracker.xlsx')
-customers = df['CUSTOMER'].unique()
+customers = df['Customer'].unique()
 
 
 # convert the customer names to the required format for dcc.Dropdown options
-options = [{'label': 'All Customers', 'value': 'all'}] + \
-          [{'label': customer, 'value': customer} for customer in customers]
-pivot_table = pd.pivot_table(df, index=['CUSTOMER'], values=['WELL NAME', 'Runtime','R/NR/Waiting'], aggfunc={'Runtime': 'mean','R/NR/Waiting': lambda x: sum(x == 'NR'),'WELL NAME': 'nunique'}).reset_index()
-pivot_table = pivot_table.reindex(columns=['CUSTOMER','WELL NAME', 'R/NR/Waiting', 'Runtime'])
 
+pivot_table = pd.pivot_table(df, index=['Customer'], values=['Installs', 'Runtime','R/NR/Waiting'], aggfunc={'Runtime': 'mean','R/NR/Waiting': lambda x: sum(x == 'NR'),'Installs': 'nunique'}).reset_index()
+pivot_table = pivot_table.reindex(columns=['Customer','Installs', 'R/NR/Waiting', 'Runtime'])
 
 pivot_table['Runtime'] = pivot_table['Runtime'].round()
 pivot_table = pivot_table.rename(columns={'Runtime': 'Average Runtime'})
 pivot_table = pivot_table.rename(columns={'R/NR/Waiting': 'Failures'})
 
 
-data=df.groupby('CUSTOMER').filter(lambda x: (x['R/NR/Waiting'] == 'NR').sum() >= 1)
-customers = data['CUSTOMER'].unique()
+data=df.groupby('Customer').filter(lambda x: (x['R/NR/Waiting'] == 'NR').sum() >= 2)
+customers = data['Customer'].unique()
+options = [{'label': 'All Customers', 'value': 'all'}] + \
+          [{'label': customer, 'value': customer} for customer in customers]
 app = dash.Dash(__name__)
 server = app.server
 dash_table = dash_table.DataTable(
@@ -80,7 +79,7 @@ app.layout = html.Div(
 def update_pie_charts(selected_customer):
     
     if selected_customer != 'all':
-        filtered_data = data[data['CUSTOMER'] == selected_customer]
+        filtered_data = data[data['Customer'] == selected_customer]
     else:
         filtered_data=data
     failure_points = filtered_data['Failure Points'].value_counts()
