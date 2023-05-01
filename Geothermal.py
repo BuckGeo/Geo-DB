@@ -13,16 +13,22 @@ from dash import dash_table
 
 df = pd.read_excel('New Geo Tracker.xlsx')
 customers = df['Customer'].unique()
+df['INSTALL DATE'] = pd.to_datetime(df['INSTALL DATE']) # Convert Install Date column to datetime format
+df['INSTALL DATE'] = df['INSTALL DATE'].dt.strftime('%m-%d-%Y') # Format date as mm-dd-yyyy
 
+max_runtimes = df.groupby('Customer')['Runtime'].max()
 
-# convert the customer names to the required format for dcc.Dropdown options
-
-pivot_table = pd.pivot_table(df, index=['Customer'], values=['Installs', 'Runtime','R/NR/Waiting'], aggfunc={'Runtime': 'mean','R/NR/Waiting': lambda x: sum(x == 'NR'),'Installs': 'nunique'}).reset_index()
-pivot_table = pivot_table.reindex(columns=['Customer','Installs', 'R/NR/Waiting', 'Runtime'])
-
+# Create a pivot table from the DataFrame
+pivot_table = pd.pivot_table(df, index=['Customer'], values=['Installs', 'Runtime','R/NR/Waiting', 'INSTALL DATE'], aggfunc={'Runtime': 'mean','R/NR/Waiting': lambda x: sum(x == 'NR'),'Installs': 'nunique', 'INSTALL DATE': 'max'}).reset_index()
+  
+# Add the max_runtimes variable to the pivot table
 pivot_table['Runtime'] = pivot_table['Runtime'].round()
-pivot_table = pivot_table.rename(columns={'Runtime': 'Average Runtime'})
+pivot_table = pivot_table.merge(max_runtimes, on='Customer', how='left')
+pivot_table = pivot_table.rename(columns={'Runtime_x': 'Average Runtime'})
+pivot_table = pivot_table.rename(columns={'Runtime_y': 'Max Runtime'})
+# Rename columns
 pivot_table = pivot_table.rename(columns={'R/NR/Waiting': 'Failures'})
+pivot_table = pivot_table.rename(columns={'INSTALL DATE': 'First Install'})
 
 
 data=df.groupby('Customer').filter(lambda x: (x['R/NR/Waiting'] == 'NR').sum() >= 2)
