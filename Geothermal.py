@@ -31,6 +31,9 @@ pivot_table = pivot_table.rename(columns={'R/NR/Waiting': 'Failures'})
 pivot_table = pivot_table.rename(columns={'INSTALL DATE': 'First Install'})
 
 
+
+# Reorder the columns of the pivot table
+#pivot_table = pivot_table[['Customer', 'Installs', 'Failures', 'Average Runtime', 'Max Runtime', 'First Install']]
 data=df.groupby('Customer').filter(lambda x: (x['R/NR/Waiting'] == 'NR').sum() >= 2)
 customers = data['Customer'].unique()
 options = [{'label': 'All Customers', 'value': 'all'}] + \
@@ -46,12 +49,13 @@ dash_table = dash_table.DataTable(
 )
 
 app.layout = html.Div(
-    style={'backgroundColor': '#b22222', 'height': '120px'},
+    style={'backgroundColor': '#E00000', 'height': '75px'},
+    
     children=[
 
         html.Hr(),
         html.H1('Summit ESP- A Halliburton Service: Geothermal Dashboard',
-                style={"text-align": "center", "font-size": "3rem"}),
+                style={"text-align": "center", "font-size": "2rem"}),
 
         dcc.Dropdown(
             id='customer-dropdown',
